@@ -1,0 +1,4 @@
+node_modules
+portaudio
+build/*
+snowboy-detect-swig_wrap.cxx
