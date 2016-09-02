@@ -245,6 +245,98 @@ void Detect(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
+class DetectWorker : public Nan::AsyncProgressWorker {
+ public:
+  DetectWorker(
+      Nan::Callback *callback
+    , Nan::Callback *progress
+    , std::string model_filename
+    , std::string sensitivity_str)
+    : AsyncProgressWorkerBase(callback), progress(progress)
+    , model_filename(model_filename), sensitivity_str(sensitivity_str) {}
+  ~DetectWorker() {}
+
+  void Execute (const Nan::AsyncProgressWorker::ExecutionProgress& progress) {
+    // Common resource file for umdl model
+    std::string resource_filename = "../../resources/common.res";
+
+    // Configures signal handling.
+    struct sigaction sig_int_handler;
+    sig_int_handler.sa_handler = SignalHandler;
+    sigemptyset(&sig_int_handler.sa_mask);
+    sig_int_handler.sa_flags = 0;
+    sigaction(SIGINT, &sig_int_handler, NULL);
+
+    float audio_gain = 1;
+
+    // Initializes Snowboy detector.
+    snowboy::SnowboyDetect detector(resource_filename, model_filename);
+    detector.SetSensitivity(sensitivity_str);
+    detector.SetAudioGain(audio_gain);
+
+    // Initializes PortAudio. You may use other tools to capture the audio.
+    PortAudioWrapper pa_wrapper(detector.SampleRate(),
+                                detector.NumChannels(), detector.BitsPerSample());
+
+    // Runs the detection.
+    // Note: I hard-coded <int16_t> as data type because detector.BitsPerSample()
+    //       returns 16.
+    std::cout << "Listening... Press Ctrl+C to exit" << std::endl;
+    std::vector<int16_t> data;
+
+    recognizing = true;
+    while (recognizing) {
+      pa_wrapper.Read(&data);
+      if (data.size() != 0) {
+        int result = detector.RunDetection(data.data(), data.size());
+        // Make callback
+        // v8::Local<v8::Value> argv[] = {
+        //   Nan::New<v8::Number>(result)
+        // };
+        // Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callbackHandle, 1, argv);
+        progress.Send(reinterpret_cast<const char*>(&result), sizeof(int));
+      }
+    }
+
+
+    // for (int i = 0; i < 100; ++i) {
+    //   progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
+    //   Sleep(100);
+    // }
+  }
+
+  void HandleProgressCallback(const char *data, size_t size) {
+    Nan::HandleScope scope;
+
+    v8::Local<v8::Value> argv[] = {
+        Nan::New<v8::Integer>(*reinterpret_cast<int*>(const_cast<char*>(data)))
+    };
+    progress->Call(1, argv);
+  }
+
+ private:
+  Nan::Callback *progress;
+  std::string model_filename;
+  std::string sensitivity_str;
+};
+
+NAN_METHOD(DoProgress) {
+  Nan::Callback *progress = new Nan::Callback(info[2].As<v8::Function>());
+  Nan::Callback *callback = new Nan::Callback(info[3].As<v8::Function>());
+
+  v8::String::Utf8Value param1(info[0]->ToString());
+  std::string model_filename = std::string(*param1);
+
+  v8::String::Utf8Value param2(info[1]->ToString());
+  std::string sensitivity_str = std::string(*param2);
+
+  AsyncQueueWorker(new DetectWorker(
+      callback
+    , progress
+    , model_filename
+    , sensitivity_str));
+}
+
 NAN_METHOD(IsListening) {
   info.GetReturnValue().Set(recognizing);
 }
@@ -260,6 +352,8 @@ void Init(v8::Local<v8::Object> exports) {
               Nan::New<v8::FunctionTemplate>(IsListening)->GetFunction());
   exports->Set(Nan::New("stop").ToLocalChecked(),
               Nan::New<v8::FunctionTemplate>(Stop)->GetFunction());
+  exports->Set(Nan::New("doProgress").ToLocalChecked(),
+              Nan::New<v8::FunctionTemplate>(DoProgress)->GetFunction());
 }
 
 NODE_MODULE(addon, Init)
