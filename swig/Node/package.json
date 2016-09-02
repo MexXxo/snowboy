@@ -4,8 +4,7 @@
   "description": "Snowboy is a customizable hotword detection engine for you to create your own hotword like \"OK Google\" or \"Alexa\". It is powered by deep neural networks and has the following properties:",
   "main": "index.js",
   "dependencies": {
-    "nan": "^2.4.0",
-    "streaming-worker-sdk": "^0.9.1"
+    "nan": "^2.4.0"
   },
   "devDependencies": {},
   "scripts": {

@@ -2,7 +2,6 @@
 // Node module (author: Evan Cohen)
 
 #include <nan.h>
-#include "streaming-worker.h"
 #include <cassert>
 #include <csignal>
 #include <iostream>
