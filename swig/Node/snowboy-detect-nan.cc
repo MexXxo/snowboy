@@ -217,28 +217,17 @@ class DetectWorker : public Nan::AsyncProgressWorker {
     // Runs the detection.
     // Note: I hard-coded <int16_t> as data type because detector.BitsPerSample()
     //       returns 16.
-    std::cout << "Listening... Press Ctrl+C to exit" << std::endl;
     std::vector<int16_t> data;
 
     recognizing = true;
+    // Perform recognition
     while (recognizing) {
       pa_wrapper.Read(&data);
       if (data.size() != 0) {
         int result = detector.RunDetection(data.data(), data.size());
-        // Make callback
-        // v8::Local<v8::Value> argv[] = {
-        //   Nan::New<v8::Number>(result)
-        // };
-        // Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callbackHandle, 1, argv);
         progress.Send(reinterpret_cast<const char*>(&result), sizeof(int));
       }
     }
-
-
-    // for (int i = 0; i < 100; ++i) {
-    //   progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
-    //   Sleep(100);
-    // }
   }
 
   void HandleProgressCallback(const char *data, size_t size) {
