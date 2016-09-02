@@ -1,6 +1,14 @@
-Install portaudio, apply patch from C++ example
-
-Then run the following
+Install portaudio:
 ``` bash
-swig -c++ -javascript -node -DV8_VERSION=0x0478025 -I../../ snowboy-detect-swig.i
+./install_portaudio.sh
+```
+
+Configure and build with `node-gyp`
+``` bash
+node-gyp configure build
+```
+
+Run the example
+```
+node example.js
 ```
