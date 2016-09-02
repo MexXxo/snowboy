@@ -181,70 +181,6 @@ void SignalHandler(int signal){
 // While the module is recognizing
 bool recognizing = false;
 
-void Detect(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-
-  if (info.Length() < 3) {
-    Nan::ThrowTypeError("Wrong number of arguments");
-    return;
-  }
-
-  if (!info[0]->IsString() || !info[1]->IsString() || !info[2]->IsFunction()) {
-    Nan::ThrowTypeError("Wrong arguments");
-    return;
-  }
-
-  // Comma seperated strings with models, ex: "resources/snowboy.umdl,resources/alexa.pmdl"
-  v8::String::Utf8Value param1(info[0]->ToString());
-  std::string model_filename = std::string(*param1);
-
-  // Comma seperated strings with sensitivities, ex "0.4,0.4"
-  v8::String::Utf8Value param2(info[1]->ToString());
-  std::string sensitivity_str = std::string(*param2);
-
-  // Callback function
-  v8::Local<v8::Function> callbackHandle = info[2].As<v8::Function>();
-
-  // Common resource file for umdl model
-  std::string resource_filename = "../../resources/common.res";
-
-  // Configures signal handling.
-  struct sigaction sig_int_handler;
-   sig_int_handler.sa_handler = SignalHandler;
-   sigemptyset(&sig_int_handler.sa_mask);
-   sig_int_handler.sa_flags = 0;
-   sigaction(SIGINT, &sig_int_handler, NULL);
-
-   float audio_gain = 1;
-
-  // Initializes Snowboy detector.
-  snowboy::SnowboyDetect detector(resource_filename, model_filename);
-  detector.SetSensitivity(sensitivity_str);
-  detector.SetAudioGain(audio_gain);
-
-  // Initializes PortAudio. You may use other tools to capture the audio.
-  PortAudioWrapper pa_wrapper(detector.SampleRate(),
-                              detector.NumChannels(), detector.BitsPerSample());
-
-  // Runs the detection.
-  // Note: I hard-coded <int16_t> as data type because detector.BitsPerSample()
-  //       returns 16.
-  std::cout << "Listening... Press Ctrl+C to exit" << std::endl;
-  std::vector<int16_t> data;
-
-  recognizing = true;
-  while (recognizing) {
-    pa_wrapper.Read(&data);
-    if (data.size() != 0) {
-      int result = detector.RunDetection(data.data(), data.size());
-      // Make callback
-      v8::Local<v8::Value> argv[] = {
-        Nan::New<v8::Number>(result)
-      };
-      Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callbackHandle, 1, argv);
-    }
-  }
-}
-
 class DetectWorker : public Nan::AsyncProgressWorker {
  public:
   DetectWorker(
@@ -320,7 +256,7 @@ class DetectWorker : public Nan::AsyncProgressWorker {
   std::string sensitivity_str;
 };
 
-NAN_METHOD(DoProgress) {
+NAN_METHOD(DoDetectAsync) {
   Nan::Callback *progress = new Nan::Callback(info[2].As<v8::Function>());
   Nan::Callback *callback = new Nan::Callback(info[3].As<v8::Function>());
 
@@ -347,13 +283,11 @@ NAN_METHOD(Stop) {
 
 void Init(v8::Local<v8::Object> exports) {
   exports->Set(Nan::New("detect").ToLocalChecked(),
-              Nan::New<v8::FunctionTemplate>(Detect)->GetFunction());
+              Nan::New<v8::FunctionTemplate>(DoDetectAsync)->GetFunction());
   exports->Set(Nan::New("isListening").ToLocalChecked(),
               Nan::New<v8::FunctionTemplate>(IsListening)->GetFunction());
   exports->Set(Nan::New("stop").ToLocalChecked(),
               Nan::New<v8::FunctionTemplate>(Stop)->GetFunction());
-  exports->Set(Nan::New("doProgress").ToLocalChecked(),
-              Nan::New<v8::FunctionTemplate>(DoProgress)->GetFunction());
 }
 
 NODE_MODULE(addon, Init)
