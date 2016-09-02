@@ -1,7 +1,8 @@
 // Copyright 2016  KITT.AI (author: Guoguo Chen)
 // Node module (author: Evan Cohen)
-#include <cmath>
+
 #include <nan.h>
+#include "streaming-worker.h"
 #include <cassert>
 #include <csignal>
 #include <iostream>
@@ -177,6 +178,10 @@ void SignalHandler(int signal){
   exit(0);
 }
 
+
+// While the module is recognizing
+bool recognizing = false;
+
 void Detect(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
   if (info.Length() < 3) {
@@ -227,7 +232,8 @@ void Detect(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   std::cout << "Listening... Press Ctrl+C to exit" << std::endl;
   std::vector<int16_t> data;
 
-  while (true) {
+  recognizing = true;
+  while (recognizing) {
     pa_wrapper.Read(&data);
     if (data.size() != 0) {
       int result = detector.RunDetection(data.data(), data.size());
@@ -240,9 +246,21 @@ void Detect(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
+NAN_METHOD(IsListening) {
+  info.GetReturnValue().Set(recognizing);
+}
+
+NAN_METHOD(Stop) {
+  recognizing = false;
+}
+
 void Init(v8::Local<v8::Object> exports) {
   exports->Set(Nan::New("detect").ToLocalChecked(),
               Nan::New<v8::FunctionTemplate>(Detect)->GetFunction());
+  exports->Set(Nan::New("isListening").ToLocalChecked(),
+              Nan::New<v8::FunctionTemplate>(IsListening)->GetFunction());
+  exports->Set(Nan::New("stop").ToLocalChecked(),
+              Nan::New<v8::FunctionTemplate>(Stop)->GetFunction());
 }
 
 NODE_MODULE(addon, Init)

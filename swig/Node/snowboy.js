@@ -1,8 +1,11 @@
 // Snowboy: Node Module (author: Evan Cohen)
 
-snowboy = require('./build/Release/snowboy.node');
+SnowboyDetect = require('./build/Release/snowboy.node');
 
-console.log(snowboy.detect("../../resources/snowboy.umdl", "0.5", 
+console.log("SnowboyDetect", SnowboyDetect);
+console.log("isListening",SnowboyDetect.isListening());
+
+SnowboyDetect.detect("../../resources/snowboy.umdl", "0.5", 
     function(detectedEvent){
         // Handel message codes
         var event = "";
@@ -14,11 +17,12 @@ console.log(snowboy.detect("../../resources/snowboy.umdl", "0.5",
                 event = "Error";
                 break;
             case 0:
-                event = "Sound";
+                event = "Sound" + " - isListening: " + SnowboyDetect.isListening();
                 break;
             default:
-                event = "Keyword: " + detectedEvent
+                event = "Keyword: " + detectedEvent;
+                SnowboyDetect.stop()
                 break;
-        }
-        console.log(event);
-    }));
+    }
+    console.log(event);
+});

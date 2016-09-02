@@ -5,6 +5,7 @@
       "sources": [ "snowboy-detect-nan.cc" ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
+        "<!(node -e \"require('streaming-worker-sdk')\")",
         "<(module_root_dir)/../../",
         "portaudio/src/common/",
         "portaudio/include/"
