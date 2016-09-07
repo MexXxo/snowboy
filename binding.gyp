@@ -7,7 +7,7 @@
         "<!(node -e \"require('nan')\")",
         "<(module_root_dir)/",
         "<(module_root_dir)/swig/Node/portaudio/src/common/",
-        "<(module_root_dir)/swig/Node/portaudio/include/"
+        "<(module_root_dir)/swig/Node/portaudio/include/portaudio.h"
       ],
       "libraries": [],
       'xcode_settings': {
@@ -15,7 +15,7 @@
         'OTHER_CFLAGS': ['-stdlib=libc++', '-std=c++11']
       },
       "conditions": [
-        ['OS=="mac"', {
+        ['target_platform=="darwin"', {
           "link_settings": {
           "libraries": [
             "AudioUnit.framework",
@@ -24,7 +24,21 @@
             "AudioToolbox.framework",
             "CoreServices.framework",
             "<(module_root_dir)/lib/osx/libsnowboy-detect.a",
-            "<(module_root_dir)/swig/Node/portaudio/install/lib/libportaudio.a",
+            "<(module_root_dir)/swig/Node/portaudio/install/lib/libportaudio.a"
+            ]
+          }
+        }],
+        ['target_platform=="linux"', {
+          "link_settings": {
+          "libraries": [
+            "<(module_root_dir)/lib/ubuntu64/libsnowboy-detect.a",
+            ]
+          }
+        }],
+        ['target_arch=="arm"', {
+          "link_settings": {
+          "libraries": [
+            "<(module_root_dir)/lib/rpi/libsnowboy-detect.a",
             ]
           }
         }]

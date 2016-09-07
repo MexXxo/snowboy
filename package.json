@@ -1,6 +1,6 @@
 {
   "name": "snowboy",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Snowboy is a customizable hotword detection engine for you to create your own hotword like \"OK Google\" or \"Alexa\". It is powered by deep neural networks and has the following properties:",
   "main": "./index.js",
   "binary": {
@@ -11,21 +11,44 @@
     "host"        : "https://evancohen-snowboy.s3-us-west-2.amazonaws.com"
   },
   "dependencies": {
-    "nan": "^2.4.0",
     "node-pre-gyp": "0.6.x"
   },
   "devDependencies": {
+    "nan": "^2.4.0",
     "aws-sdk": "2.x"
   },
   "scripts": {
     "preinstall" : "npm install node-pre-gyp",
     "install" : "node-pre-gyp install --fallback-to-build",
     "test": "node index.js",
-    "prepublish": "npm ls"
+    "prepublish": "npm ls",
+
+    "build-pi" : "node-pre-gyp clean configure build --target_arch=arm --target_platform=linux",
+    "build-osx" : "node-pre-gyp clean configure build --target_platform=darwin",
+    "build-linux" : "node-pre-gyp clean configure build --target_arch=x64 --target_platform=linux",
+
+    "package-pi" : "node-pre-gyp package --target_arch=arm --target_platform=linux",
+    "package-osx" : "node-pre-gyp package --target_platform=darwin",
+    "package-linux" : "node-pre-gyp rebuild package --target_arch=x64 --target_platform=linux",
+
+    "publish-pi" : "node-pre-gyp publish --target_arch=arm --target_platform=linux",
+    "publish-osx" : "node-pre-gyp publish --target_platform=darwin",
+    "publish-linux" : "node-pre-gyp publish --target_arch=x64 --target_platform=linux",
+
+    "unpublish-pi" : "node-pre-gyp unpublish --target_arch=arm --target_platform=linux",
+    "unpublish-osx" : "node-pre-gyp unpublish --target_platform=darwin",
+    "unpublish-linux" : "node-pre-gyp unpublish --target_arch=x64 --target_platform=linux",
+    "unpublish-all" : "npm run unpublish-pi && npm run unpublish-osx && npm run unpublish-linux",
+
+    "bpp-pi" : "npm run build-pi && npm run package-pi && npm run publish-pi",
+    "bpp-osx" : "npm run build-osx && npm run package-osx && npm run publish-osx",
+    "bpp-linux" : "npm run build-linux && npm run package-linux && npm run publish-linux",
+
+    "bpp-all" : "npm run bpp-pi && npm run bpp-osx && npm run bpp-linux"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kitt-AI/snowboy.git"
+    "url": "git+https://github.com/evancohen/snowboy.git"
   },
   "author": "Evan Cohen <evancohen>",
   "license": "Apache-2.0",

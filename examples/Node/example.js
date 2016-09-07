@@ -1,4 +1,4 @@
-var snowboy = require('../../snowboy.js');
+var snowboy = require('../../index.js');
 
 snowboy.addModel("../../resources/snowboy.umdl");
 
