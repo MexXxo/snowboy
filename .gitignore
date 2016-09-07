@@ -6,6 +6,7 @@ snowboydetect.py
 *.pyc
 *.o
 *.so
+*.tgz
 
 /examples/C++/pa_stable_v19_20140130.tgz
 /examples/C++/portaudio
@@ -16,11 +17,10 @@ snowboydetect.py
 /swig/Android/java/
 /swig/Android/jniLibs/
 
-pids
-logs
-results
-lib/node/binding
-*.tgz
-npm-debug.log
-node_modules
-build
+/pids
+/logs
+/results
+/lib/node/binding
+/npm-debug.log
+/node_modules
+/build
