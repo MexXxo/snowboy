@@ -1,14 +1,14 @@
 {
   "name": "snowboy",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "Snowboy is a customizable hotword detection engine for you to create your own hotword like \"OK Google\" or \"Alexa\". It is powered by deep neural networks and has the following properties:",
   "main": "./index.js",
   "binary": {
     "module_name" : "snowboy",
-    "module_path" : "./lib/binding/{configuration}/{node_abi}-{platform}-{arch}/",
+    "module_path" : "./lib/node/binding/{configuration}/{node_abi}-{platform}-{arch}/",
     "remote_path" : "./{module_name}/v{version}/{configuration}/",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
-    "host"        : "https://node-pre-gyp-tests.s3-us-west-1.amazonaws.com"
+    "host"        : "https://evancohen-snowboy.s3-us-west-2.amazonaws.com"
   },
   "dependencies": {
     "nan": "^2.4.0",
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "preinstall" : "npm install node-pre-gyp",
-    "install" : "./install_portaudio.sh && node-pre-gyp install --fallback-to-build",
+    "install" : "node-pre-gyp install --fallback-to-build",
     "test": "node index.js",
     "prepublish": "npm ls"
   },

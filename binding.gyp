@@ -2,17 +2,14 @@
   "targets": [
     {
       "target_name": "<(module_name)",
-      "sources": [ "snowboy-detect-nan.cc" ],
+      "sources": [ "swig/Node/snowboy-detect-nan.cc" ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
-        "<(module_root_dir)/../../",
-        "portaudio/src/common/",
-        "portaudio/include/"
+        "<(module_root_dir)/",
+        "<(module_root_dir)/swig/Node/portaudio/src/common/",
+        "<(module_root_dir)/swig/Node/portaudio/include/"
       ],
-      "libraries": [
-        "<(module_root_dir)/../../lib/osx/libsnowboy-detect.a",
-        "<(module_root_dir)/portaudio/install/lib/libportaudio.a",
-      ],
+      "libraries": [],
       'xcode_settings': {
         'MACOSX_DEPLOYMENT_TARGET': '10.7',
         'OTHER_CFLAGS': ['-stdlib=libc++', '-std=c++11']
@@ -25,7 +22,9 @@
             "Accelerate.framework",
             "CoreAudio.framework",
             "AudioToolbox.framework",
-            "CoreServices.framework"
+            "CoreServices.framework",
+            "<(module_root_dir)/lib/osx/libsnowboy-detect.a",
+            "<(module_root_dir)/swig/Node/portaudio/install/lib/libportaudio.a",
             ]
           }
         }]
